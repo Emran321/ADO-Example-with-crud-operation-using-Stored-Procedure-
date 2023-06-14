@@ -1,0 +1,206 @@
+create procedure sp_GetAllProducts
+as
+begin
+	select Price,ProductName,Price,Qty,Remarks from dbo.tbl_ProductMaster with(nolock)
+end
+
+
+
+
+Create proc sp_InserProducts
+(
+@ProductName nvarchar(50),
+@Price decimal(8, 2),
+@Qty int,
+@Remarks nvarchar(50) = NULL
+)
+as
+begin
+
+begin try
+begin tran
+insert into dbo.tbl_ProductMaster(ProductName, Price, Qty, Remarks)
+values(@ProductName, @Price, @Qty, @Remarks)
+commit tran
+end try
+
+begin catch
+rollback tran
+select ERROR_MESSAGE()
+end catch
+end
+
+
+
+
+
+
+Eidted sp_InserProducts
+USE [ADO_EXAMPLE1]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_InserProducts]    Script Date: 6/9/2023 8:45:34 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER proc [dbo].[sp_InserProducts]
+(
+@ProductName nvarchar(50),
+@Price decimal(8, 2),
+@Qty int,
+@Remarks nvarchar(50) = NULL
+)
+as
+begin
+
+declare @RowCount int = 0
+set @RowCount = (select count(1) from dbo.tbl_ProductMaster where ProductName = @ProductName)
+
+
+begin try
+begin tran
+if(@RowCount = 0)
+begin
+insert into dbo.tbl_ProductMaster(ProductName, Price, Qty, Remarks)
+values(@ProductName, @Price, @Qty, @Remarks)
+end
+commit tran
+end try
+
+begin catch
+rollback tran
+select ERROR_MESSAGE()
+end catch
+end
+
+
+
+sp_GetProductByID
+create proc sp_GetProductByID
+(
+@ProductID int
+)
+as 
+begin
+select 
+	  [ProductName]
+      ,[Price]
+      ,[Qty]
+      ,[Remarks]
+  FROM [ADO_EXAMPLE1].[dbo].[tbl_ProductMaster]
+  where PRODUCTID = @ProductID
+end
+
+
+
+
+update Product 
+Create proc [dbo].[sp_UpdateProducts]
+(
+@ProductID int,
+@ProductName nvarchar(50),
+@Price decimal(8, 2),
+@Qty int,
+@Remarks nvarchar(50) = NULL
+)
+as
+begin
+
+declare @RowCount int = 0
+set @RowCount = (select count(1) from dbo.tbl_ProductMaster where ProductName = @ProductName and PRODUCTID <> @ProductID) 
+
+
+begin try
+begin tran
+if(@RowCount = 0)
+begin
+update dbo.tbl_ProductMaster
+set ProductName = @ProductName,
+    Price = @Price,
+	Qty = @Qty,
+	Remarks = @Remarks
+	where PRODUCTID = @ProductID
+end
+commit tran
+end try
+
+begin catch
+rollback tran
+select ERROR_MESSAGE()
+end catch
+end
+
+
+
+Delete procedure
+create proc sp_DelectProduct
+(
+@PRODUCTID INT,
+@RETURNMESSAGE VARCHAR(50) OUTPUT
+)
+AS
+BEGIN
+ BEGIN TRY 
+ BEGIN TRAN
+	DELETE FROM DBO.tbl_ProductMaster
+	WHERE @PRODUCTID = @PRODUCTID
+ COMMIT TRAN
+ END TRY
+ BEGIN CATCH
+ ROLLBACK TRAN
+ SET @RETURNMESSAGE = ERROR_MESSAGE()
+ END CATCH
+END
+
+
+
+alter proc sp_DelectProduct
+(
+@PRODUCTID INT,
+@OUTPUTMESSAGE VARCHAR(50) OUTPUT
+)
+AS
+BEGIN
+ BEGIN TRY 
+ BEGIN TRAN
+	DELETE FROM DBO.tbl_ProductMaster
+	WHERE @PRODUCTID = @PRODUCTID
+	SET @OUTPUTMESSAGE = 'Product Deleted successfully....!'
+ COMMIT TRAN
+ END TRY
+ BEGIN CATCH
+ ROLLBACK TRAN
+ SET @OUTPUTMESSAGE = ERROR_MESSAGE()
+ END CATCH
+
+
+validation
+alter proc sp_DelectProduct
+(
+@PRODUCTID INT,
+@OUTPUTMESSAGE VARCHAR(50) OUTPUT
+)
+AS
+BEGIN
+
+declare @rowcount int = 0
+ BEGIN TRY 
+	set @rowcount = (select COUNT(1) from dbo.tbl_ProductMaster where PRODUCTID = @PRODUCTID)
+	if(@rowcount > 0)
+	 begin 
+ BEGIN TRAN
+	DELETE FROM DBO.tbl_ProductMaster
+	WHERE PRODUCTID = @PRODUCTID
+	SET @OUTPUTMESSAGE = 'Product Deleted successfully....!'
+ COMMIT TRAN
+ end
+ else
+ begin 
+ set @OUTPUTMESSAGE = 'Products not available....!' + convert (varchar,@PRODUCTID)
+ end
+ END TRY
+ BEGIN CATCH
+ ROLLBACK TRAN
+ SET @OUTPUTMESSAGE = ERROR_MESSAGE()
+ END CATCH
+END
